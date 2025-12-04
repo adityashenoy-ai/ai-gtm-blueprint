@@ -1,19 +1,20 @@
-# 🎈 Blank app template
+# AI GTM Blueprint Generator
 
-A simple Streamlit app template for you to modify!
+🚀 Generate GTM strategy based on real market signals (trending launches, sentiment, competitors) using AI.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+## Features
 
-### How to run it on your own machine
+- Simulated trending product launches
+- User sentiment tracking
+- Competitor mapping (optional)
+- GTM launch strategy recommendations
+- Pricing & positioning insights (optional)
+- AI-generated insights via OpenAI API
 
-1. Install the requirements
+## Setup
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+1. Clone the repo:
 
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+```bash
+git clone https://github.com/yourusername/ai-gtm-blueprint.git
+cd ai-gtm-blueprint
