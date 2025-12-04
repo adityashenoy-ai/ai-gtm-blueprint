@@ -1,7 +1,9 @@
+# ai_gtm_blueprint.py
 import streamlit as st
 import pandas as pd
-from openai import OpenAI
+import openai
 import random
+import os
 
 # ----------------------------
 # Streamlit UI
@@ -10,11 +12,18 @@ st.set_page_config(page_title="AI GTM Blueprint Generator", layout="wide")
 st.title("🚀 AI GTM Blueprint Generator")
 st.subheader("Generate GTM strategy based on real market signals (trending launches, sentiment, competitors)")
 
-# Initialize OpenAI client
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# ----------------------------
+# Set OpenAI API Key
+# ----------------------------
+# Priority: Streamlit secrets -> Environment variable
+openai.api_key = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+
+if not openai.api_key:
+    st.error("❌ OpenAI API key not found. Please set it in `.streamlit/secrets.toml` or as environment variable.")
+    st.stop()
 
 # ----------------------------
-# Sample Trending Products (Simulated)
+# Sample Trending Products (Simulated Scraping)
 # ----------------------------
 st.write("### 🔥 Trending Product Launches")
 sample_products = pd.DataFrame({
@@ -53,36 +62,45 @@ include_pricing = st.checkbox("Generate pricing & positioning insights", value=T
 # ----------------------------
 if st.button("Generate GTM Blueprint"):
     with st.spinner("Generating AI GTM strategy..."):
-        product_data = sample_products[sample_products["Product"] == product_name].to_dict(orient="records")[0]
+        try:
+            # Filter sample product
+            product_data = sample_products[sample_products["Product"] == product_name].to_dict(orient="records")[0]
 
-        prompt = f"""
-        You are a product strategist AI assistant.
-        The product launch details are:
-        {product_data}
+            # Construct prompt
+            prompt = f"""
+            You are a product strategist AI assistant.
+            The product launch details are:
+            {product_data}
 
-        Tasks:
-        1. Provide a GTM launch strategy.
-        2. Suggest positioning and messaging.
-        3. Recommend pricing insights.
-        4. Map competitor moves if requested.
-        5. Highlight risks and mitigation.
-        Respond in markdown format with headings and bullet points.
-        """
+            Tasks:
+            1. Provide a GTM launch strategy.
+            2. Suggest positioning and messaging.
+            3. Recommend pricing insights.
+            4. Map competitor moves if requested.
+            5. Highlight risks and mitigation.
+            Respond in markdown format with headings and bullet points.
+            """
 
-        if not include_competitors:
-            prompt += "\nIgnore competitor mapping."
+            if not include_competitors:
+                prompt += "\nIgnore competitor mapping."
 
-        if not include_pricing:
-            prompt += "\nIgnore pricing insights."
+            if not include_pricing:
+                prompt += "\nIgnore pricing insights."
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.4
-        )
+            # Call OpenAI API
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.4
+            )
 
-        st.markdown("### 📝 AI GTM Blueprint")
-        st.markdown(response.choices[0].message.content)
+            st.markdown("### 📝 AI GTM Blueprint")
+            st.markdown(response.choices[0].message.content)
+
+        except openai.error.AuthenticationError:
+            st.error("❌ Authentication Error: Please check your OpenAI API key.")
+        except Exception as e:
+            st.error(f"❌ An error occurred: {e}")
 
 # ----------------------------
 # Footer
